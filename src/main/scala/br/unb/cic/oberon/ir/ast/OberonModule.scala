@@ -2,6 +2,8 @@ package br.unb.cic.oberon.ir.ast
 
 import br.unb.cic.oberon.visitor.OberonVisitor
 import br.unb.cic.oberon.environment.Environment
+
+import scala.collection.mutable
 import scala.collection.mutable.Map
 import scala.collection.mutable.ListBuffer
 
@@ -169,9 +171,9 @@ case object NullValue extends Value {
   def value: T = ()
 }
 
-sealed trait Location extends Expression
-case class BaseLocation(loc: Int) extends Location
-case object NullLocation extends Location
+case class RecordValue(value: mutable.Map[String, Expression]) extends Value { type T = mutable.Map[String, Expression] }
+
+case class Location(loc: Int) extends Expression
 case class Brackets(exp: Expression) extends Expression
 case class ArrayValue(value: ListBuffer[Expression], arrayType: ArrayType)
     extends Value { type T = ListBuffer[Expression] }
@@ -279,7 +281,7 @@ case class ArrayAssignment(array: Expression, index: Expression)
     extends Designator
 case class RecordAssignment(record: Expression, field: String)
     extends Designator
-case class PointerAssignment(pointerName: String) extends Designator
+case class PointerAssignment(pointerName: String, indirections: Int = 1) extends Designator
 
 /** User defined types.
   *
