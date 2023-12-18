@@ -64,7 +64,8 @@ def runInterpreter(module: OberonModule): Environment[Expression] = {
   def declareVariable(environment : Environment[Expression], variable: VariableDeclaration): Environment[Expression] = {
     environment.baseType(variable.variableType) match {
       case Some(ArrayType(length, baseType)) => environment.setGlobalVariable(variable.name, ArrayValue(ListBuffer.fill(length)(Undef()), ArrayType(length, baseType)))
-      case Some(PointerType(variableType)) => environment.declareGlobalPointer(variable.name, variableType)
+      case Some(PointerType(variableType)) => environment.declareGlobalPointer(variable.name, Undef())
+      case Some(RecordType(fields)) => environment.declareGlobalRecord(variable.name, fields, Undef())
       case _ => environment.setGlobalVariable(variable.name, Undef())
     }
   }
@@ -102,7 +103,7 @@ def runInterpreter(module: OberonModule): Environment[Expression] = {
           case VarAssignment(name) => envt = envt.setVariable(name, evalExpression(envt, exp)._2)
           case ArrayAssignment(array, index) => envt = arrayAssignment(envt, array, index, exp)
           case PointerAssignment(pointerName) => envt = pointerAssignment(envt, pointerName, exp)
-          case RecordAssignment(record, field) => envt = recordAssignment(envt, record, field, exp)
+          case RecordAssignment(expression, name) => envt = recordAssignment(envt, exp, name)
         }
         envt
 
@@ -169,12 +170,6 @@ def runInterpreter(module: OberonModule): Environment[Expression] = {
 
       case ProcedureCallStmt(name, args) =>
         callProcedure(name, args, envt)
-
-
-      case NewStmt(name) => {
-        envt.createLocationForGlobalPointer(name, NullValue)
-      }
-
     }
   }
 
@@ -240,31 +235,31 @@ def runInterpreter(module: OberonModule): Environment[Expression] = {
         envt.setGlobalPointer(pointerName, loc.get)
       } case _ => {
 
-        envt.pointsTo(pointerName).get match {
-          case BaseLocation(loc) => {
-            val value = evalExpression(envt, exp)._2
-            envt.setVariable(pointerName, value)
-          } case NullLocation => {
-            throw new RuntimeException("Pointer " + pointerName + " is null")
-          } case _ => {
-            throw new RuntimeException("Unexpected location type")
-          }
-        }
+        val value = evalExpression(envt, exp)._2
 
-
+        envt.setVariable(pointerName, value)
       }
     }
   }
 
-  def recordAssignment(envt: Environment[Expression], record: Expression, field: String, exp: Expression): Environment[Expression] = {
-    return envt;
-  }
+ /* def recordAssignment(envt: Environment[Expression], exp: Expression, atrName: String): Unit = {
+    val value = evalExpression(envt, exp)
+
+    envt.declareGlobalRecord()
+  }*/
+
+  /*
+   Falar do ^.
+   Falar da ideia de implementação do record(A que nao funciona e a ideia meio ruim).
+   */
 
   /*
    * This method is mostly useful for testing purposes.
    * That is, here we are considering testability a
    * design concern.
    */
+
+   
   def setGlobalVariable(env: Environment[Expression], name: String, exp: Expression): Environment[Expression] = {
     env.setGlobalVariable(name, exp)
   }
