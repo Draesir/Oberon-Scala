@@ -1,0 +1,14 @@
+MODULE pointerOps;
+VAR
+  a : POINTER TO INTEGER;
+  b : POINTER TO REAL;
+  c : POINTER TO INTEGER;
+  d : REAL
+  d : REAL;
+BEGIN
+    a^ := 7;
+    b^ := 12.5;
+    c^ := 6
+    c^ := 6;
+    d := (a^ + c^)/(b^)
+END
